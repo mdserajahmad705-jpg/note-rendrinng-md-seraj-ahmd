@@ -1,0 +1,1648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Question Paper Pro — Final · Clean Defaults · Disabled Watermark</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --bg: #ffffff;
+  --surface: #f8fafc;
+  --card: #ffffff;
+  --border: #e2e8f0;
+  --accent: #2563eb;
+  --accent2: #0f766e;
+  --text: #0f172a;
+  --muted: #475569;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+.wrap { max-width: 1050px; margin: 0 auto; padding: 0 18px 50px; }
+.topbar {
+  padding: 28px 0 16px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+  background: white;
+}
+.topbar h1 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #0f172a 20%, #2563eb);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.topbar p { color: var(--muted); font-size: 0.78rem; margin-top: 3px; font-family: monospace; }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  margin-bottom: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03), 0 1px 3px rgba(0,0,0,0.05);
+}
+.card-head {
+  padding: 10px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-head span { font-size: 0.68rem; font-family: monospace; color: #5b6e8c; text-transform: uppercase; letter-spacing: 0.8px; }
+.card-head em { background: #eef2ff; border: 1px solid #cbd5e1; border-radius: 20px; padding: 1px 9px; font-size: .62rem; color: var(--accent); font-style: normal; }
+.card-body { padding: 14px 16px; }
+.row { display: grid; gap: 10px; margin-bottom: 10px; }
+.r2 { grid-template-columns: 1fr 1fr; }
+.r4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+@media(max-width:600px){ .r2, .r4 { grid-template-columns: 1fr; } }
+.fg { display: flex; flex-direction: column; gap: 4px; }
+.fg label { font-size: .65rem; color: #4b5563; font-family: monospace; text-transform: uppercase; font-weight: 600; }
+.fg input, .fg textarea, .fg select {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 8px 12px;
+  color: #0f172a;
+  font-size: .86rem;
+  outline: none;
+  transition: all 0.15s;
+}
+.fg input:focus, .fg textarea:focus, .fg select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(37,99,235,0.1); }
+
+.fspick { display: flex; gap: 8px; }
+.fsb {
+  flex: 1;
+  padding: 8px 4px;
+  border: 1px solid var(--border);
+  border-radius: 40px;
+  background: white;
+  color: #334155;
+  font-family: 'Times New Roman', serif;
+  cursor: pointer;
+  font-size: .85rem;
+  text-align: center;
+  transition: all .15s;
+}
+.fsb.on { background: #eef2ff; border-color: var(--accent); color: #1e40af; font-weight: 500; }
+
+.panels { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+@media(max-width:680px){ .panels{grid-template-columns:1fr;} }
+.panel {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.ph {
+  padding: 10px 14px;
+  background: #fafcff;
+  border-bottom: 1px solid var(--border);
+  font-size: .68rem;
+  font-family: monospace;
+  color: #4a5a7a;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+textarea {
+  flex: 1;
+  min-height: 240px;
+  background: white;
+  border: none;
+  outline: none;
+  color: #0f172a;
+  font-family: 'SF Mono', monospace;
+  font-size: .82rem;
+  line-height: 1.6;
+  padding: 14px;
+  resize: vertical;
+}
+#prev {
+  min-height: 240px;
+  padding: 14px;
+  line-height: 1.6;
+  overflow-x: auto;
+  color: #1e293b;
+  font-size: .9rem;
+  background: white;
+}
+#prev ul { margin: 3pt 0; }
+#prev:empty::before { content: '✨ formatted preview appears here'; color: #94a3b8; font-style: italic; }
+.sbar {
+  padding: 6px 14px;
+  background: #f9fafb;
+  border-top: 1px solid var(--border);
+  font-size: .65rem;
+  font-family: monospace;
+  color: #475569;
+}
+.tbar { display: flex; gap: 9px; flex-wrap: wrap; justify-content: center; margin-bottom: 14px; }
+.btn {
+  padding: 10px 22px;
+  border-radius: 40px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: .82rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all .15s;
+}
+.bp { background: linear-gradient(135deg, #2563eb, #1e40af); color: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+.bp:hover { filter: brightness(1.03); transform: translateY(-1px); }
+.bt { background: linear-gradient(135deg, #0f766e, #0d9488); color: #fff; }
+.bt:hover { filter: brightness(1.03); transform: translateY(-1px); }
+.bo { background: #f1f5f9; color: #1e293b; border: 1px solid #cbd5e1; }
+.bo:hover { background: #e6edf5; border-color: var(--accent); }
+.pbar { height: 3px; background: #e2e8f0; border-radius: 2px; overflow: hidden; margin-top: 6px; display: none; }
+.pfill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); width: 0%; transition: width .3s; }
+.toast {
+  position: fixed; bottom: 18px; right: 18px;
+  background: #1e293b; border-left: 3px solid #2dd4bf;
+  padding: 10px 20px; border-radius: 40px;
+  font-family: monospace; font-size: .75rem;
+  color: white; opacity: 0; transition: all .25s;
+  pointer-events: none; z-index: 9999;
+}
+.toast.on { opacity: 1; transform: translateY(-6px); }
+.chips { display: flex; gap: 7px; flex-wrap: wrap; justify-content: center; margin-bottom: 14px; }
+.chip {
+  padding: 4px 14px; background: white; border: 1px solid var(--border);
+  border-radius: 40px; font-size: .68rem; font-family: monospace;
+  cursor: pointer; color: #334155; transition: all .15s;
+}
+.chip:hover { border-color: var(--accent); background: #eef2ff; color: #1e40af; }
+footer { text-align: center; padding: 20px 0; color: #64748b; font-size: .65rem; border-top: 1px solid var(--border); margin-top: 10px; }
+.math-block { background: #f8fafc; border-left: 3px solid var(--accent); padding: 8px; margin: 8px 0; text-align: center; border-radius: 12px; }
+.auto-table { width: 100%; border-collapse: collapse; margin: 6px 0; }
+.auto-table th, .auto-table td { border: 1px solid #cbd5e1; padding: 6px 10px; background: white; }
+.wm-slider { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="topbar">
+  <h1>📄 Question Paper Pro</h1>
+  <p>// Bold header/footer · Circular watermark (off by default) · 0.6cm box · Perfect split</p>
+</div>
+
+<div class="card">
+  <div class="card-head"><span>📌 HEADER (every page)</span><em>Use {n} for page number</em></div>
+  <div class="card-body">
+    <div class="fg"><label>Header text</label><input id="headerText" placeholder="e.g. My Institute | {n}" value="© seraj52.sab@gmail.com | Copyright Reserved | INTEGRAL AMU-JMI ELITE ACADEMY"></div>
+  </div>
+  <div class="card-head" style="border-top:1px solid var(--border);"><span>📌 FOOTER (every page)</span><em>Use {n} for page number</em></div>
+  <div class="card-body"><div class="fg"><label>Footer text</label><input id="footerText" placeholder="e.g. Page {n} · Confidential" value="© seraj52.sab@gmail.com | Copyright Reserved | INTEGRAL AMU-JMI ELITE ACADEMY | Page {n}"></div></div>
+</div>
+
+<div class="card">
+  <div class="card-head"><span>🏛️ INSTITUTE NAME</span><em>first page only · inside box</em></div>
+  <div class="card-body">
+    <div class="fg"><label>Institute name</label>
+      <input id="iname" placeholder="e.g. GENIUS COACHING" list="instSuggestList" value="INTEGRAL AMU-JMI ELITE INSTITUTE OF LEARNING">
+      <datalist id="instSuggestList"></datalist>
+    </div>
+    <div class="fg" style="margin-top:8px;"><label>Address / Contact</label><input id="iaddr" placeholder="address line" value="Best preparation of AMU , JMI , BHU , JNV and Sainik School | By Md Seraj Ahmad | 9576739852"></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head"><span>📋 TEST INFORMATION</span><em>first page only</em></div>
+  <div class="card-body">
+    <div class="row r2">
+      <div class="fg"><label>Chapter / Test name</label><input id="tname" placeholder="" value=""></div>
+      <div class="fg"><label>Subject</label><input id="subj" placeholder="" value=""></div>
+    </div>
+    <div class="row r4">
+      <div class="fg"><label>Test Code</label><input id="tcode" placeholder="SR-001" value="SR-001"></div>
+      <div class="fg"><label>Max Marks</label><input id="tmm" placeholder="85" value="85"></div>
+      <div class="fg"><label>Class</label><input id="tcls" placeholder="e.g. VIII" value=""></div>
+      <div class="fg"><label>Date</label><input id="tdate" placeholder="DD/MM/YYYY" value=""></div>
+    </div>
+    <div class="row r2">
+      <div class="fg"><label>⏱️ Time / Duration</label><input id="headerTime" placeholder="e.g. Time : 1:30 hrs" value=""></div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head"><span>📰 TWO COLUMN LAYOUT</span><em>Left + Right column · Dashed divider · Saves pages</em></div>
+  <div class="card-body">
+    <div class="fg"><label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+      <input type="checkbox" id="twoColEnable"> Enable 2-Column Layout (Left | Right — saves PDF pages)
+    </label></div>
+    <div style="margin-top:8px; font-size:.72rem; color:#64748b; font-family:monospace;">
+      ↳ Questions pehle Left side, phir Right side fill hongi. Beech mein dashed vertical line.
+    </div>
+  </div>
+</div>
+
+
+  <span class="chip" onclick="loadEx('q1')">📐 Quadratic</span>
+  <span class="chip" onclick="loadEx('q2')">🧪 MCQ & Calculus</span>
+  <span class="chip" onclick="loadEx('q3')">⚙️ Physics</span>
+  <span class="chip" onclick="loadEx('long')">📜 Long Paper (Multi‑page)</span>
+</div>
+<div class="panels">
+  <div class="panel"><div class="ph">✏️ Questions (Markdown + LaTeX)</div>
+    <textarea id="inp" placeholder="Q1. Solve: $$x^2 - 5x + 6 = 0$$&#10;&#10;Q2. If $a+b=10$ and $ab=24$, find $a^2+b^2$."></textarea>
+    <div class="sbar" id="stats">0 chars · 0 equations</div>
+  </div>
+  <div class="panel"><div class="ph">👁️ Preview (formatted)</div>
+    <div id="prev"></div><div class="sbar" id="rstatus">Ready</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head"><span>🔤 FONT SIZE (Times New Roman)</span><em>6 pt – 12 pt</em></div>
+  <div class="card-body">
+    <div class="fspick" style="flex-wrap:wrap; gap:6px; margin-bottom:10px;">
+      <button class="fsb" data-sz="6"  onclick="pickFont(this)">6</button>
+      <button class="fsb" data-sz="7"  onclick="pickFont(this)">7</button>
+      <button class="fsb" data-sz="8"  onclick="pickFont(this)">8</button>
+      <button class="fsb" data-sz="9"  onclick="pickFont(this)">9</button>
+      <button class="fsb" data-sz="10" onclick="pickFont(this)">10</button>
+      <button class="fsb on" data-sz="11" onclick="pickFont(this)">11 ✓</button>
+      <button class="fsb" data-sz="12" onclick="pickFont(this)">12</button>
+    </div>
+    <div class="fg" style="flex-direction:row; align-items:center; gap:8px;">
+      <label style="white-space:nowrap;">✏️ Manual pt:</label>
+      <input id="fontManual" type="number" min="6" max="30" step="0.5" placeholder="e.g. 10.5"
+        style="width:90px; border-radius:14px; border:1px solid var(--border); padding:6px 10px; font-size:.86rem;"
+        oninput="manualFont(this)">
+      <span style="font-size:.72rem; color:#64748b;">Enter 6–30 pt</span>
+    </div>
+  </div>
+</div>
+
+<div class="tbar">
+  <button class="btn bp" onclick="doFormat()">⚡ Format & Preview</button>
+  <button class="btn bt" onclick="doPDF()">🖨️ Download PDF (Full Box + Watermark)</button>
+  <button class="btn bo" onclick="doHTML()">🌐 Save as HTML</button>
+  <button class="btn bo" onclick="doClear()">🗑 Clear</button>
+</div>
+<div class="pbar" id="pbar"><div class="pfill" id="pfill"></div></div>
+</div>
+<div class="toast" id="toast"></div>
+<footer>✨ 0.6cm border · Bold header/footer · Watermark disabled by default · Auto date · Perfect page split</footer>
+
+<script>
+/* ================= FIREBASE REALTIME DATABASE (replaces localStorage) ================= */
+(function(){
+  const firebaseConfig = {
+    apiKey: "AIzaSyDkOHzA3gPYNotBpHk5ZvYTvTytMV8qG_4",
+    authDomain: "questionrendering-df5c1.firebaseapp.com",
+    databaseURL: "https://questionrendering-df5c1-default-rtdb.firebaseio.com",
+    projectId: "questionrendering-df5c1",
+    storageBucket: "questionrendering-df5c1.firebasestorage.app",
+    messagingSenderId: "101553931824",
+    appId: "1:101553931824:web:a6bd2495f1fcb7f13f4ff5",
+    measurementId: "G-C6RPQ5DWW1"
+  };
+
+  const app = firebase.initializeApp(firebaseConfig);
+  const db = firebase.database(app);
+  const ROOT = 'qp_app_data'; // all keys are stored as children of this node
+
+  const cache = {};              // in-memory mirror, so getItem stays synchronous like localStorage
+  const pending = {};            // keys waiting to be flushed to Firebase
+  let flushTimer = null;
+
+  function flush(){
+    flushTimer = null;
+    const updates = {};
+    Object.keys(pending).forEach(k=>{
+      updates[ROOT + '/' + k] = pending[k];
+      delete pending[k];
+    });
+    if(Object.keys(updates).length){
+      db.ref().update(updates).catch(e=>console.error('[Firebase save failed]', e));
+    }
+  }
+  function scheduleFlush(){
+    clearTimeout(flushTimer);
+    flushTimer = setTimeout(flush, 300);
+  }
+
+  // Drop-in replacement for window.localStorage used throughout this file.
+  window.dbStorage = {
+    getItem(key){ return Object.prototype.hasOwnProperty.call(cache, key) ? cache[key] : null; },
+    setItem(key, value){
+      const v = String(value);
+      cache[key] = v;
+      pending[key] = v;
+      scheduleFlush();
+    },
+    removeItem(key){
+      delete cache[key];
+      pending[key] = null;
+      scheduleFlush();
+    }
+  };
+
+  // Resolves once the existing data has been pulled down from Firebase into the cache.
+  window.dbStorageReady = db.ref(ROOT).once('value').then(function(snap){
+    const val = snap.val() || {};
+    Object.keys(val).forEach(function(k){
+      if(val[k] !== null && val[k] !== undefined) cache[k] = val[k];
+    });
+  }).catch(function(e){
+    console.error('[Firebase load failed]', e);
+    if(typeof toast === 'function') toast('⚠️ Firebase load failed — check console/network', 'red');
+  });
+
+  // Keep multiple tabs/devices in sync in real time.
+  db.ref(ROOT).on('value', function(snap){
+    const val = snap.val() || {};
+    Object.keys(val).forEach(function(k){ cache[k] = val[k]; });
+  });
+})();
+/* ================= END FIREBASE SETUP ================= */
+
+let fontSize = 11;
+
+const STORAGE_KEYS = {
+  header:'qp_header', footer:'qp_footer', iname:'qp_iname', iaddr:'qp_iaddr',
+  tname:'qp_tname', subj:'qp_subj', tcode:'qp_tcode', tmm:'qp_tmm',
+  tcls:'qp_tcls', tdate:'qp_tdate', questions:'qp_questions', fontSizeKey:'qp_fontSize',
+  instHistory:'qp_instHistory',
+  wmEnable:'wm_enable', wmText:'wm_text', wmSize:'wm_size', wmOpacity:'wm_opacity', wmColor:'wm_color'
+};
+
+function toast(msg, col='green') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.borderLeftColor = col==='red' ? '#f97316' : '#2dd4bf';
+  el.classList.add('on');
+  clearTimeout(el._t);
+  el._t = setTimeout(()=>el.classList.remove('on'), 2800);
+}
+
+function pickFont(btn) {
+  document.querySelectorAll('.fsb').forEach(x=>x.classList.remove('on'));
+  btn.classList.add('on');
+  fontSize = parseFloat(btn.dataset.sz);
+  const m = document.getElementById('fontManual');
+  if(m) m.value = fontSize;
+  dbStorage.setItem(STORAGE_KEYS.fontSizeKey, fontSize);
+  toast(`Times New Roman ${fontSize}pt`);
+}
+
+function manualFont(inp) {
+  const val = parseFloat(inp.value);
+  if(!isNaN(val) && val >= 1 && val <= 30) {
+    fontSize = val;
+    document.querySelectorAll('.fsb').forEach(x=>{ x.classList.remove('on'); if(parseFloat(x.dataset.sz)===val) x.classList.add('on'); });
+    dbStorage.setItem(STORAGE_KEYS.fontSizeKey, fontSize);
+    toast(`Times New Roman ${fontSize}pt`);
+  }
+}
+
+function escapeHtmlSimple(str) { if(!str) return ''; return str.replace(/[&<>]/g, m=> m==='&'?'&amp;': m==='<'?'&lt;':'&gt;'); }
+
+function mdTable(txt) {
+  const lines = txt.trim().split('\n').filter(l=>l.trim());
+  const rows = lines.filter(l=>!/^\s*\|?\s*[-:]+[-|\s:]*\|?\s*$/.test(l));
+  if(!rows.length) return null;
+  const pr = r=>r.replace(/^\||\|$/g,'').split('|').map(c=>c.trim());
+  const hdr = pr(rows[0]); const bod = rows.slice(1).map(pr);
+  let h = '<table class="auto-table"><thead><tr>';
+  hdr.forEach(x=>h+='<th>'+escapeHtmlSimple(x)+'</th>'); h+='</thead><tbody>';
+  bod.forEach(r=>{h+='<tr>'; r.forEach(c=>h+='<td>'+escapeHtmlSimple(c)+'</td>'); h+='</tr>';});
+  return h+'</tbody></table>';
+}
+
+function doFormat() {
+  let raw = document.getElementById('inp').value;
+  if(!raw.trim()) { document.getElementById('prev').innerHTML = ''; updateStats(); return; }
+  // phone keyboards put hidden spaces (nbsp / zero-width) on 'blank' lines -> treat them as truly empty
+  raw = raw.replace(/\r/g,'').replace(/^(?:[\p{Z}\p{Cf}\t\u3164\uffa0]|&nbsp;|&#160;|<br\s*\/?>)+$/gmiu,'');
+  raw = raw.replace(/^([ \t]*[-•*][ \t]+\S.*?)(?:[\p{Z}\p{Cf}\t]|&nbsp;|&#160;|<br\s*\/?>)+$/gmiu,'$1'); // trailing <br>/nbsp at end of a point
+  let html = raw;
+  const disp = [], inl = [];
+  html = html.replace(/\$\$([\s\S]*?)\$\$/g, (_,m)=>{disp.push(m.trim()); return '%%D'+(disp.length-1)+'%%';});
+  html = html.replace(/\$([^$\n]+?)\$/g, (_,m)=>{inl.push(m.trim()); return '%%I'+(inl.length-1)+'%%';});
+  html = html.replace(/(\|.+\|\n)((?:\|[-:| ]+\|\n)?)(\|.+\|\n?)+/g, m=>mdTable(m)||m);
+  html = html.replace(/^#### (.+)$/gm,'<h4>$1</h4>').replace(/^### (.+)$/gm,'<h3>$1</h3>').replace(/^## (.+)$/gm,'<h2>$1</h2>').replace(/^# (.+)$/gm,'<h1>$1</h1>');
+  html = (typeof window.qpListLevels === 'function') ? window.qpListLevels(html) : html.replace(/^[ \t]*\*[ \t]+(?=\S)/gm,'- ');
+  html = html.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>');
+  html = html.replace(/`([^`]+)`/g,'<code>$1</code>');
+  html = html.replace(/^[-•] (.+)$/gm,'<li>$1</li>');
+  html = html.replace(/(<\/li>)[ \t]*\n(?:[ \t]*\n)+(?=[ \t]*<li)/g,'$1\n'); // blank lines between points -> one list (even spacing)
+  html = html.replace(/(<li[^>]*>.*<\/li>(\n|$))+/g,m=>'<ul>'+m+'</ul>');
+  html = html.replace(/^\d+\. (.+)$/gm,'<li>$1</li>');
+  const fmtBlock = p => {
+    p = p.trim(); if(!p) return '';
+    if(/^<(h[1-6]|ul|ol|table|div|%%|li)/.test(p)) return p.replace(/(?<!>|%%D\d+%%)\n(?!<)/g,'<br>');
+    return '<p>'+p.replace(/\n/g,'<br>')+'</p>';
+  };
+  html = html.split('\n\n').map(p => {
+    p = p.trim(); if(!p) return '';
+    // a list glued to a line above/below it (no blank line) must not get <br> between its points
+    if(p.indexOf('<ul>') > -1) return p.split(/(<ul>[\s\S]*?<\/ul>)/).map(seg => seg.indexOf('<ul>') === 0 ? seg : fmtBlock(seg)).join('\n');
+    return fmtBlock(p);
+  }).join('\n');
+  disp.forEach((m,i)=>{ let r; try{ r=katex.renderToString(m,{displayMode:true,throwOnError:false}); }catch(e){ r='<code>'+m+'</code>'; } html=html.replace('%%D'+i+'%%','<div class="math-block">'+r+'</div>'); });
+  inl.forEach((m,i)=>{ let r; try{ r=katex.renderToString(m,{displayMode:false,throwOnError:false}); }catch(e){ r='<code>$'+m+'$</code>'; } html=html.replace('%%I'+i+'%%','<span class="math-inline">'+r+'</span>'); });
+  document.getElementById('prev').innerHTML = html;
+  updateStats();
+  document.getElementById('rstatus').textContent = 'Preview ready ✓';
+  autoSaveAllFields();
+}
+function updateStats() {
+  const t = document.getElementById('inp').value;
+  const eq = (t.match(/\$\$[\s\S]*?\$\$|\$[^$\n]+?\$/g)||[]).length;
+  document.getElementById('stats').innerHTML = t.length+' chars · '+eq+' equations';
+}
+function doClear() { document.getElementById('inp').value = ''; doFormat(); toast('Cleared'); autoSaveAllFields(); }
+
+function getValues() {
+  return {
+    header: document.getElementById('headerText').value.trim(),
+    headerTime: document.getElementById('headerTime') ? document.getElementById('headerTime').value.trim() : '',
+    footer: document.getElementById('footerText').value.trim(),
+    iname: document.getElementById('iname').value.trim(),
+    iaddr: document.getElementById('iaddr').value.trim(),
+    tname: document.getElementById('tname').value.trim(),
+    subj: document.getElementById('subj').value.trim(),
+    tcode: document.getElementById('tcode').value.trim(),
+    tmm: document.getElementById('tmm').value.trim(),
+    tcls: document.getElementById('tcls').value.trim(),
+    tdate: document.getElementById('tdate').value.trim(),
+  };
+}
+
+function autoSaveAllFields() {
+  try {
+    dbStorage.setItem(STORAGE_KEYS.header, document.getElementById('headerText').value);
+    if(document.getElementById('headerTime')) dbStorage.setItem('qp_headerTime', document.getElementById('headerTime').value);
+    dbStorage.setItem(STORAGE_KEYS.footer, document.getElementById('footerText').value);
+    dbStorage.setItem(STORAGE_KEYS.iname, document.getElementById('iname').value);
+    dbStorage.setItem(STORAGE_KEYS.iaddr, document.getElementById('iaddr').value);
+    dbStorage.setItem(STORAGE_KEYS.tname, document.getElementById('tname').value);
+    dbStorage.setItem(STORAGE_KEYS.subj, document.getElementById('subj').value);
+    dbStorage.setItem(STORAGE_KEYS.tcode, document.getElementById('tcode').value);
+    dbStorage.setItem(STORAGE_KEYS.tmm, document.getElementById('tmm').value);
+    dbStorage.setItem(STORAGE_KEYS.tcls, document.getElementById('tcls').value);
+    dbStorage.setItem(STORAGE_KEYS.tdate, document.getElementById('tdate').value);
+    dbStorage.setItem(STORAGE_KEYS.questions, document.getElementById('inp').value);
+    if(document.getElementById('wmEnable')) dbStorage.setItem(STORAGE_KEYS.wmEnable, document.getElementById('wmEnable').checked);
+    if(document.getElementById('twoColEnable')) dbStorage.setItem('qp_twoCol', document.getElementById('twoColEnable').checked);
+    if(document.getElementById('wmText')) dbStorage.setItem(STORAGE_KEYS.wmText, document.getElementById('wmText').value);
+    if(document.getElementById('wmSize')) dbStorage.setItem(STORAGE_KEYS.wmSize, document.getElementById('wmSize').value);
+    if(document.getElementById('wmOpacity')) dbStorage.setItem(STORAGE_KEYS.wmOpacity, document.getElementById('wmOpacity').value);
+    if(document.getElementById('wmColor')) dbStorage.setItem(STORAGE_KEYS.wmColor, document.getElementById('wmColor').value);
+    const inst = document.getElementById('iname').value.trim();
+    if(inst) {
+      let hist = JSON.parse(dbStorage.getItem(STORAGE_KEYS.instHistory) || '[]');
+      hist = hist.filter(h=>h!==inst);
+      hist.unshift(inst);
+      if(hist.length>10) hist.pop();
+      dbStorage.setItem(STORAGE_KEYS.instHistory, JSON.stringify(hist));
+      updateDatalist(hist);
+    }
+  } catch(e){}
+}
+function updateDatalist(hist) {
+  const dl = document.getElementById('instSuggestList');
+  if(dl) { dl.innerHTML = ''; hist.forEach(v=>{ let o=document.createElement('option'); o.value=v; dl.appendChild(o); }); }
+}
+function setDefaultDate() {
+  const today = new Date();
+  const dd = String(today.getDate()).padStart(2,'0');
+  const mm = String(today.getMonth()+1).padStart(2,'0');
+  const yyyy = today.getFullYear();
+  const defaultDate = `${dd}/${mm}/${yyyy}`;
+  if(!dbStorage.getItem(STORAGE_KEYS.tdate)) {
+    document.getElementById('tdate').value = defaultDate;
+  }
+}
+function loadAllFields() {
+  document.getElementById('headerText').value = "© seraj52.sab@gmail.com | Copyright Reserved | INTEGRAL AMU-JMI ELITE ACADEMY";
+  const savedHT = dbStorage.getItem('qp_headerTime');
+  if(document.getElementById('headerTime')) document.getElementById('headerTime').value = savedHT || '';
+  document.getElementById('footerText').value = "© seraj52.sab@gmail.com | Copyright Reserved | INTEGRAL AMU-JMI ELITE ACADEMY | Page {n}";
+  if(dbStorage.getItem(STORAGE_KEYS.iname)) document.getElementById('iname').value = dbStorage.getItem(STORAGE_KEYS.iname);
+  document.getElementById('iaddr').value = "Best preparation of AMU , JMI , BHU , JNV and Sainik School | By Md Seraj Ahmad | 9576739852";
+  document.getElementById('tname').value = '';
+  document.getElementById('subj').value = '';
+  if(dbStorage.getItem(STORAGE_KEYS.tcode)) document.getElementById('tcode').value = dbStorage.getItem(STORAGE_KEYS.tcode);
+  else document.getElementById('tcode').value = 'SR-001';
+  if(dbStorage.getItem(STORAGE_KEYS.tmm)) document.getElementById('tmm').value = dbStorage.getItem(STORAGE_KEYS.tmm);
+  else document.getElementById('tmm').value = '85';
+  if(dbStorage.getItem(STORAGE_KEYS.tcls)) document.getElementById('tcls').value = dbStorage.getItem(STORAGE_KEYS.tcls);
+  else document.getElementById('tcls').value = '';
+  if(dbStorage.getItem(STORAGE_KEYS.tdate)) document.getElementById('tdate').value = dbStorage.getItem(STORAGE_KEYS.tdate);
+  else setDefaultDate();
+  if(dbStorage.getItem(STORAGE_KEYS.questions)) document.getElementById('inp').value = dbStorage.getItem(STORAGE_KEYS.questions);
+  const savedFont = dbStorage.getItem(STORAGE_KEYS.fontSizeKey);
+  if(savedFont && !isNaN(parseFloat(savedFont))) { fontSize = parseFloat(savedFont);
+    document.querySelectorAll('.fsb').forEach(btn=>{ if(parseFloat(btn.dataset.sz)===fontSize) btn.classList.add('on'); else btn.classList.remove('on'); });
+    const m = document.getElementById('fontManual'); if(m) m.value = fontSize;
+  }
+  let hist = JSON.parse(dbStorage.getItem(STORAGE_KEYS.instHistory) || '[]');
+  if(!Array.isArray(hist)) hist=[];
+  if(hist.length === 0) {
+    const defaultInst = document.getElementById('iname').value.trim();
+    if(defaultInst) { hist = [defaultInst]; dbStorage.setItem(STORAGE_KEYS.instHistory, JSON.stringify(hist)); }
+  }
+  updateDatalist(hist);
+  
+  // watermark settings: UI removed — feature stays permanently off
+  if(document.getElementById('wmEnable')) {
+    if(dbStorage.getItem(STORAGE_KEYS.wmEnable) !== null) document.getElementById('wmEnable').checked = dbStorage.getItem(STORAGE_KEYS.wmEnable) === 'true';
+    else document.getElementById('wmEnable').checked = false;
+  }
+  // two-column setting
+  const savedTwoCol = dbStorage.getItem('qp_twoCol');
+  if(document.getElementById('twoColEnable') && savedTwoCol !== null) document.getElementById('twoColEnable').checked = savedTwoCol === 'true';
+  if(document.getElementById('wmText') && dbStorage.getItem(STORAGE_KEYS.wmText)) document.getElementById('wmText').value = dbStorage.getItem(STORAGE_KEYS.wmText);
+  if(document.getElementById('wmSize') && dbStorage.getItem(STORAGE_KEYS.wmSize)) document.getElementById('wmSize').value = dbStorage.getItem(STORAGE_KEYS.wmSize);
+  if(document.getElementById('wmOpacity') && dbStorage.getItem(STORAGE_KEYS.wmOpacity)) document.getElementById('wmOpacity').value = dbStorage.getItem(STORAGE_KEYS.wmOpacity);
+  if(document.getElementById('wmColor') && dbStorage.getItem(STORAGE_KEYS.wmColor)) document.getElementById('wmColor').value = dbStorage.getItem(STORAGE_KEYS.wmColor);
+  updateWmPreview();
+  updateStats();
+}
+function bindEvents() {
+  ['headerText','footerText','iname','iaddr','tname','subj','tcode','tmm','tcls','tdate','headerTime'].forEach(id=>{
+    document.getElementById(id)?.addEventListener('input', autoSaveAllFields);
+  });
+  document.getElementById('inp').addEventListener('input', ()=>{ autoSaveAllFields(); updateStats(); });
+  document.getElementById('wmText')?.addEventListener('input', ()=>{ autoSaveAllFields(); updateWmPreview(); });
+  document.getElementById('wmSize')?.addEventListener('input', ()=>{ autoSaveAllFields(); updateWmPreview(); });
+  document.getElementById('wmOpacity')?.addEventListener('input', ()=>{ autoSaveAllFields(); updateWmPreview(); });
+  document.getElementById('wmColor')?.addEventListener('input', ()=>{ autoSaveAllFields(); updateWmPreview(); });
+  document.getElementById('wmEnable')?.addEventListener('change', ()=>{ autoSaveAllFields(); updateWmPreview(); });
+  if(document.getElementById('twoColEnable')) document.getElementById('twoColEnable').addEventListener('change', ()=>{ autoSaveAllFields(); doFormat(); });
+}
+function updateWmPreview() {
+  const preview = document.getElementById('wmPreview');
+  if(!preview || !document.getElementById('wmText') || !document.getElementById('wmSize') || !document.getElementById('wmOpacity') || !document.getElementById('wmColor')) return;
+  const txt = document.getElementById('wmText').value;
+  const size = parseInt(document.getElementById('wmSize').value) || 180;
+  const op = parseFloat(document.getElementById('wmOpacity').value);
+  const col = document.getElementById('wmColor').value;
+  preview.style.width = size+'px';
+  preview.style.height = size+'px';
+  preview.style.borderRadius = '50%';
+  preview.style.background = `rgba(${parseInt(col.slice(1,3),16)},${parseInt(col.slice(3,5),16)},${parseInt(col.slice(5,7),16)},${op})`;
+  preview.style.color = col;
+  preview.style.display = 'flex';
+  preview.style.alignItems = 'center';
+  preview.style.justifyContent = 'center';
+  preview.style.textAlign = 'center';
+  preview.style.fontWeight = 'bold';
+  preview.style.fontFamily = "'Times New Roman', serif";
+  preview.style.fontSize = Math.max(12, size/12)+'px';
+  preview.innerText = txt.length>40 ? txt.slice(0,37)+'...' : txt;
+}
+function getWatermarkStyle() {
+  const wmEnableEl = document.getElementById('wmEnable');
+  if(!wmEnableEl || !wmEnableEl.checked) return '';
+  const txt = document.getElementById('wmText').value;
+  if(!txt.trim()) return '';
+  const size = parseInt(document.getElementById('wmSize').value) || 200;
+  const opacity = parseFloat(document.getElementById('wmOpacity').value);
+  const color = document.getElementById('wmColor').value;
+  const rgb = parseInt(color.slice(1,3),16)+','+parseInt(color.slice(3,5),16)+','+parseInt(color.slice(5,7),16);
+  return `<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:${size}px; height:${size}px; border-radius:50%; background:rgba(${rgb},${opacity}); display:flex; align-items:center; justify-content:center; text-align:center; font-family:'Times New Roman',serif; font-weight:bold; color:${color}; font-size:${Math.max(12, size/12)}px; padding:10px; pointer-events:none; z-index:10; box-shadow:0 0 0 2px rgba(0,0,0,0.05); backdrop-filter:blur(0.5px);">${escapeHtmlSimple(txt)}</div>`;
+}
+
+// ========== PAGE WITH BOX + WATERMARK ==========
+function buildCompletePage(v, bodyContent, pageNum, isFirstPage) {
+  const fs = fontSize;
+  let headerText = v.header.replace(/\{n\}/g, pageNum);
+  let footerText = v.footer.replace(/\{n\}/g, pageNum);
+  
+  const headerHtml = `<div style="text-align:center; font-size:${fs-0.5}pt; font-weight:600; margin-bottom:4pt;">${escapeHtmlSimple(headerText)}</div><hr style="border:none; border-top:1.5px solid #000; margin-bottom:6pt;">`;
+  
+  let extraTop = '';
+  if(isFirstPage) {
+    const inst = v.iname ? `<div style="text-align:center; font-size:${fs+9}pt; font-weight:900; text-transform:uppercase; margin-bottom:3pt;">${escapeHtmlSimple(v.iname)}</div>` : '';
+    const addr = v.iaddr ? `<div style="text-align:center; font-size:${fs}pt; margin-bottom:6pt;">${escapeHtmlSimple(v.iaddr)}</div>` : '';
+    const dash1 = (inst||addr) ? `<hr style="border:none; border-top:1.5px dashed #000; margin:4pt 0 6pt;">` : '';
+    let testBlock = '';
+    if(v.tcode || v.tmm || v.tcls || v.tdate || v.tname || v.subj || v.headerTime) {
+      testBlock = `<table style="width:100%; margin-bottom:6pt;"><table>
+        <td style="width:50%; vertical-align:top;">
+          ${v.tcode?`<div><b>Test Code :</b> ${escapeHtmlSimple(v.tcode)}</div>`:''}
+          ${v.tmm?`<div><b>M.M. :</b> ${escapeHtmlSimple(v.tmm)}</div>`:''}
+          ${v.tname?`<div><b>Chapter :</b> ${escapeHtmlSimple(v.tname)}</div>`:''}
+          ${v.subj?`<div><b>Subject :</b> ${escapeHtmlSimple(v.subj)}</div>`:''}
+        </td>
+        <td style="width:50%; vertical-align:top; text-align:right;">
+          ${v.tcls?`<div><b>Class :</b> ${escapeHtmlSimple(v.tcls)}</div>`:''}
+          ${v.tdate?`<div><b>Date :</b> ${escapeHtmlSimple(v.tdate)}</div>`:''}
+          ${v.headerTime?`<div><b>Time :</b> ${escapeHtmlSimple(v.headerTime)}</div>`:''}
+        </td>
+      </table></table><hr style="border:none; border-top:1.5px dashed #000; margin-bottom:6pt;">`;
+    }
+    extraTop = inst + addr + dash1 + testBlock;
+  }
+  
+  const twoCol = document.getElementById('twoColEnable') && document.getElementById('twoColEnable').checked;
+
+  let bodyInner;
+  if (twoCol && typeof bodyContent === 'string' && bodyContent.startsWith('__TWOCOL__LEFT__')) {
+    const leftMatch = bodyContent.match(/^__TWOCOL__LEFT__([\s\S]*?)__MID____RIGHT__([\s\S]*?)__END__$/);
+    const leftHtml = leftMatch ? leftMatch[1] : bodyContent;
+    const rightHtml = leftMatch ? leftMatch[2] : '';
+    bodyInner = `<div class="twocol-wrap"><div class="col-left">${leftHtml}</div><div class="col-right">${rightHtml}</div></div>`;
+  } else if (twoCol && bodyContent && !bodyContent.startsWith('__TWOCOL__')) {
+    // Preview mode
+    bodyInner = `<div class="twocol-wrap"><div class="col-left">${bodyContent}</div><div class="col-right"></div></div>`;
+  } else {
+    bodyInner = bodyContent;
+  }
+
+  const footerHtml = `<hr style="border:none; border-top:1px solid #000; margin-top:8pt; margin-bottom:3pt;"><div style="text-align:center; font-size:${fs-0.5}pt; font-weight:600;">${escapeHtmlSimple(footerText)}</div>`;
+  const watermarkHtml = getWatermarkStyle();
+
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{ background:#fff; width:21cm; margin:0 auto; font-family:'Times New Roman',Times,serif; }
+    .page{ width:21cm; height:29.7cm; background:#fff; display:flex; flex-direction:column; position:relative; }
+    .box { 
+      margin: 0.6cm; 
+      border: 1.5px solid #1e293b; 
+      background: white;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      height: calc(29.7cm - 1.2cm);
+      position: relative;
+      z-index: 1;
+    }
+    .box-header { flex-shrink: 0; padding: 0.1cm 0.2cm 0; }
+    .box-body { flex: 1; font-size: ${fs}pt; line-height: 1.42; padding: 0.05cm 0.2cm 0.1cm; overflow:hidden; display:flex; flex-direction:column; }
+    .box-body > .twocol-wrap { flex:1; display:grid; grid-template-columns:1fr 1fr; gap:0; min-height:0; }
+    .box-body > .twocol-wrap > .col-left { padding-right:8pt; border-right:1.5px dashed #1e293b; overflow:auto; }
+    .box-body > .twocol-wrap > .col-right { padding-left:8pt; overflow:auto; }
+    .box-footer { flex-shrink: 0; padding: 0 0.2cm 0.1cm; }
+    .box-body p{ margin:0 0 5pt; }
+    .box-body h1, .box-body h2, .box-body h3, .box-body h4{ margin:6pt 0 3pt; }
+    .box-body ul, .box-body ol{ margin:3pt 0 3pt 1.5em; }
+    ${typeof bulletCss==='function' ? bulletCss('.box-body') : ''}
+    .math-block{ text-align:center; margin:6pt 0; background:#f9fafb; border-left:2px solid #2563eb; padding:6pt; border-radius:6px; }
+    .auto-table{ width:100%; border-collapse:collapse; }
+    .auto-table td,.auto-table th{ border:1px solid #64748b; padding:4pt 8pt; }
+    hr { margin: 3px 0; }
+    .watermark-container { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:10; }
+  </style>
+  </head><body>
+  <div class="page">
+    <div class="box">
+      <div class="box-header">${headerHtml}${extraTop}</div>
+      <div class="box-body">${bodyInner}</div>
+      <div class="box-footer">${footerHtml}</div>
+    </div>
+    ${watermarkHtml ? `<div class="watermark-container">${watermarkHtml}</div>` : ''}
+  </div>
+  </body></html>`;
+}
+
+// ========== PAGE SPLITTER (ZERO-LOSS: real-page measurement + oversize splitting + fit guarantee) ==========
+async function splitContentIntoPages(bodyHTML, v) {
+  const twoCol = document.getElementById('twoColEnable') && document.getElementById('twoColEnable').checked;
+
+  // ---- 1. Collect every top-level node (stray text is wrapped so nothing is dropped) ----
+  const holder = document.createElement('div');
+  holder.innerHTML = bodyHTML;
+  const queue = [];
+  const BLOCK = /^(H[1-6]|P|UL|OL|LI|TABLE|DIV|PRE|BLOCKQUOTE|HR)$/;
+  let run = [];
+  function flushRun() {
+    const meaningful = run.some(n => n.nodeType === 1 || (n.textContent || '').trim());
+    if (meaningful) {
+      const w = document.createElement('div');
+      run.forEach(n => w.appendChild(n.cloneNode(true)));
+      queue.push(w);
+    }
+    run = [];
+  }
+  // Block elements become nodes; loose text / inline pieces sitting between them
+  // (e.g. lines right after a heading or display-math) are grouped, never dropped.
+  Array.from(holder.childNodes).forEach(n => {
+    if (n.nodeType === 1 && BLOCK.test(n.tagName)) { flushRun(); queue.push(n); }
+    else if (n.nodeType === 1 || n.nodeType === 3) run.push(n);
+  });
+  flushRun();
+
+  // ---- 2. Helpers ----
+  async function openFrame(isFirstPage, pageNum) {
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position:fixed; left:-9999px; top:0; width:794px; height:1123px; border:none; visibility:hidden;';
+    document.body.appendChild(iframe);
+    const initial = twoCol
+      ? '__TWOCOL__LEFT__<div style="height:1px"></div>__MID____RIGHT____END__'
+      : '';
+    const html = buildCompletePage(v, initial, pageNum, isFirstPage);
+    await new Promise(res => { iframe.onload = res; iframe.srcdoc = html; });
+    await new Promise(r => setTimeout(r, 120));
+    return { iframe, d: iframe.contentDocument };
+  }
+
+  // wait until fonts (KaTeX etc.) and images inside the frame are fully loaded
+  async function settle(d, target) {
+    void target.offsetHeight;                       // force layout so fonts start loading
+    try { await d.fonts.ready; } catch (e) {}
+    const pending = Array.from(d.images).filter(im => !im.complete);
+    if (pending.length) await Promise.all(pending.map(im => new Promise(r => { im.onload = im.onerror = r; })));
+    void target.offsetHeight;
+  }
+  const fits = t => t.scrollHeight <= t.clientHeight;   // strict: no tolerance
+
+  // split an oversized node into smaller pieces (no content is lost)
+  function splitNode(node) {
+    const tag = node.tagName.toLowerCase();
+
+    // (a) lines separated by <br>
+    const hasBr = Array.from(node.childNodes).some(c => c.nodeType === 1 && c.tagName === 'BR');
+    if (hasBr && tag !== 'ul' && tag !== 'ol' && tag !== 'table') {
+      const groups = [[]];
+      Array.from(node.childNodes).forEach(c => {
+        if (c.nodeType === 1 && c.tagName === 'BR') groups.push([]);
+        else groups[groups.length - 1].push(c);
+      });
+      const parts = groups
+        .filter(g => g.some(c => (c.nodeType === 1) || (c.textContent || '').trim()))
+        .map((g, i, arr) => {
+          const el = node.cloneNode(false);
+          g.forEach(c => el.appendChild(c.cloneNode(true)));
+          if (i < arr.length - 1) el.style.marginBottom = '0';
+          return el;
+        });
+      if (parts.length > 1) return parts;
+    }
+
+    // (b) lists -> one <li> per piece
+    if (tag === 'ul' || tag === 'ol') {
+      const lis = Array.from(node.children);
+      if (lis.length > 1) {
+        const baseStart = tag === 'ol' ? (parseInt(node.getAttribute('start'), 10) || 1) : 1;
+        return lis.map((li, i) => {
+          const el = node.cloneNode(false);
+          if (tag === 'ol') el.setAttribute('start', baseStart + i);
+          el.appendChild(li.cloneNode(true));
+          if (i < lis.length - 1) el.style.marginBottom = '0';
+          if (i > 0) el.style.marginTop = '0';
+          return el;
+        });
+      }
+    }
+
+    // (c) tables -> one row per piece (header only on the first piece)
+    if (tag === 'table') {
+      const rows = Array.from(node.querySelectorAll('tbody > tr'));
+      const thead = node.querySelector('thead');
+      if (rows.length > 1) {
+        return rows.map((tr, i) => {
+          const el = node.cloneNode(false);
+          if (i === 0 && thead) el.appendChild(thead.cloneNode(true));
+          const tb = document.createElement('tbody');
+          tb.appendChild(tr.cloneNode(true));
+          el.appendChild(tb);
+          return el;
+        });
+      }
+    }
+
+    // (d) wrapper with several element children
+    if (node.children.length > 1 && !node.classList.contains('math-block')) {
+      const kids = Array.from(node.children);
+      return kids.map(k => k.cloneNode(true));
+    }
+    return null;
+  }
+
+  // last resort for something that cannot be split but is taller than the whole column
+  async function shrinkToFit(d, target, node) {
+    const img = node.querySelector && node.querySelector('img');
+    if (img) {
+      img.style.width = 'auto';
+      img.style.maxWidth = '100%';
+      img.style.maxHeight = Math.max(40, target.clientHeight - 24) + 'px';
+    }
+    for (let k = 0; k < 6; k++) {
+      await settle(d, target);
+      if (fits(target)) return;
+      const ratio = Math.max(0.3, (target.clientHeight - 2) / target.scrollHeight);
+      const cur = parseFloat(node.style.zoom) || 1;
+      node.style.zoom = (cur * ratio * 0.98).toFixed(4);
+    }
+  }
+
+  // fill one column/box with as many whole nodes as fit; returns array of html strings
+  async function fillColumn(d, target) {
+    target.innerHTML = '';
+    const placed = [];
+    while (queue.length) {
+      const node = queue[0];
+      const clone = node.cloneNode(true);
+      target.appendChild(clone);
+      await settle(d, target);
+      if (fits(target)) {
+        placed.push(clone.outerHTML);
+        queue.shift();
+        continue;
+      }
+      target.removeChild(clone);
+      if (placed.length === 0) {
+        // node is taller than an empty column -> split it, or shrink as last resort
+        const parts = splitNode(node);
+        if (parts && parts.length > 1) { queue.splice(0, 1, ...parts); continue; }
+        const forced = node.cloneNode(true);
+        target.appendChild(forced);
+        await shrinkToFit(d, target, forced);
+        placed.push(forced.outerHTML);
+        queue.shift();
+      }
+      break;
+    }
+    return placed;
+  }
+
+  // ---- 3. Build pages ----
+  const pages = [];
+  let isFirst = true, pageNum = 1;
+  while (queue.length) {
+    const { iframe, d } = await openFrame(isFirst, pageNum);
+    try {
+      if (twoCol) {
+        const left = await fillColumn(d, d.querySelector('.col-left'));
+        const right = queue.length ? await fillColumn(d, d.querySelector('.col-right')) : [];
+        pages.push(`__TWOCOL__LEFT__${left.join('')}__MID____RIGHT__${right.join('')}__END__`);
+      } else {
+        const body = await fillColumn(d, d.querySelector('.box-body'));
+        pages.push(body.join(''));
+      }
+    } finally {
+      document.body.removeChild(iframe);
+    }
+    isFirst = false;
+    pageNum++;
+  }
+  return pages;
+}
+
+// ========== PDF GENERATION ==========
+async function doPDF() {
+  const previewHTML = document.getElementById('prev').innerHTML;
+  if(!previewHTML.trim()) { toast('Please click "Format & Preview" first', 'red'); return; }
+  const v = getValues();
+  const pbar = document.getElementById('pbar'); const pfill = document.getElementById('pfill');
+  pbar.style.display = 'block'; pfill.style.width = '5%';
+  toast('Generating PDF with full box fill...');
+  try {
+    const pageBodies = await splitContentIntoPages(previewHTML, v);
+    if(!pageBodies.length) throw new Error('No pages generated');
+    pfill.style.width = '30%';
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
+    for(let i=0; i<pageBodies.length; i++) {
+      pfill.style.width = `${30 + (i / pageBodies.length) * 65}%`;
+      const fullHtml = buildCompletePage(v, pageBodies[i], i+1, i===0);
+      const iframe = document.createElement('iframe');
+      iframe.style.cssText = 'position:fixed; left:-9999px; top:0; width:794px; height:auto; border:none;';
+      document.body.appendChild(iframe);
+      await new Promise(res => { iframe.onload = res; iframe.srcdoc = fullHtml; });
+      await new Promise(r => setTimeout(r, 600));
+      try { await iframe.contentDocument.fonts.ready; } catch(e) {}
+      const pageElem = iframe.contentDocument?.querySelector('.page');
+      if(pageElem) {
+        const canvas = await html2canvas(pageElem, { scale: 2.8, backgroundColor: '#ffffff', useCORS: true, logging: false, windowWidth: 794 });
+        if(i !== 0) pdf.addPage();
+        const imgW = 210; const imgH = (canvas.height * 210) / canvas.width;
+        pdf.addImage(canvas.toDataURL('image/png', 1.0), 'PNG', 0, 0, imgW, imgH, undefined, 'FAST');
+      }
+      document.body.removeChild(iframe);
+    }
+    const fileName = `QuestionPaper_Final_${Date.now()}.pdf`;
+    pdf.save(fileName);
+    toast(`✅ PDF ready: ${pageBodies.length} page(s)`, 'green');
+  } catch(err) { toast('PDF error: '+err.message, 'red'); console.error(err); }
+  finally { setTimeout(()=>{ pbar.style.display = 'none'; pfill.style.width='0%'; }, 800); }
+}
+
+function doHTML() {
+  const previewHTML = document.getElementById('prev').innerHTML;
+  if(!previewHTML.trim()) { toast('Format first','red'); return; }
+  const v = getValues();
+  const fullHtml = buildCompletePage(v, previewHTML, 1, true);
+  const blob = new Blob([fullHtml], {type:'text/html'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'QuestionPaper_Final.html'; a.click(); URL.revokeObjectURL(a.href);
+  toast('HTML saved');
+}
+
+function loadEx(type) {
+  const examples = {
+    q1: `## Quadratic Equations\n\n**Q1.** Solve $x^2 - 5x + 6 = 0$.\n\n**Q2.** If $\\alpha,\\beta$ are roots of $2x^2-3x+1=0$, find $\\alpha^2+\\beta^2$.\n\n**Q3.** Find $k$ so that $kx^2-6x+4=0$ has equal roots.\n\n**Q4.** Using quadratic formula: $3x^2-2x-1=0$.\n\n**Q5.** A train travels 360 km at uniform speed. If speed +5 km/h, time -1 hr. Find original speed.`,
+    q2: `## MCQs & Integration\n\n**Q1.** Discriminant of $ax^2+bx+c=0$ is:\n(A) $b^2-4ac$ (B) $b^2+4ac$ (C) $4ac$ (D) $-b^2+4ac$\n\n**Q2.** $\\int_0^1 x^2 dx =$ (A) 1/2 (B) 1/3 (C) 1/4 (D) 1\n\n**Q3.** $\\sin^2\\theta+\\cos^2\\theta =$ (A) 0 (B) 1 (C) 2 (D) $\\theta$\n\n**Q4.** $\\lim_{x\\to 0} \\frac{\\sin x}{x} =$ (A) 0 (B) 1 (C) $\\infty$ (D) undefined`,
+    q3: `## Newton's Laws\n\n**Q1.** A 5 kg block pulled with 20 N. Find acceleration.\n\n**Q2.** State and prove Work-Energy theorem: $W = \\frac12 mv^2 - \\frac12 mu^2$.\n\n**Q3.** Projectile range $R = \\frac{u^2\\sin2\\theta}{g}$. Find $\\theta$ for max range.\n\n**Q4.** Impulse: $F=50N$, $\\Delta t=2s$, find $J$.\n\n**Q5.** Car accelerates from rest at $2m/s^2$ for 10s. Find final velocity and distance.`,
+    long: `## Long Multi‑Page Test Paper (FULL BOX)\n\n` + Array(26).fill().map((_,i)=>`**Q${i+1}.** Solve quadratic: $$x^2 - ${i+1}x + ${i*2+1} = 0$$  \nFind roots and verify sum/product.\n\n`).join('')
+  };
+  document.getElementById('inp').value = examples[type] || examples.q1;
+  updateStats();
+  doFormat();
+  autoSaveAllFields();
+}
+
+window.addEventListener('load', () => {
+  window.dbStorageReady.then(() => {
+    loadAllFields();
+    bindEvents();
+    doFormat();
+  });
+});
+</script>
+
+<!-- ================================================================
+     IMAGE INSERT MODULE (additive only — does not edit any code above)
+     - Separate, school-specific Firebase namespace: "qpimg_*"
+     - Images are attached to exact content blocks (heading/paragraph/
+       question/list/table/equation) — before, after, or at content
+       start/end — and stay attached across reformatting.
+     - Movable via the manager panel (reattach / move up / move down).
+     - Only clean <img> markup is written into #prev, so PDF / HTML
+       export (which read #prev.innerHTML) pick images up automatically
+       with no changes to doPDF()/doHTML()/splitContentIntoPages().
+     - doFormat is wrapped (not modified) so images re-attach whenever
+       content is reformatted.
+     ================================================================ -->
+<script>
+(function(){
+  'use strict';
+  const LS_PREFIX = 'qpimg_';
+  const SCHOOL_KEY = LS_PREFIX + 'schoolId';
+  function storeKey(schoolId){ return LS_PREFIX + 'store::' + schoolId; }
+
+  function sanitizeId(s){
+    return (s||'').toString().trim().toLowerCase()
+      .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,60) || 'default-school';
+  }
+  function hashStr(s){
+    let h = 5381;
+    for(let i=0;i<s.length;i++){ h = ((h<<5)+h) + s.charCodeAt(i); h = h|0; }
+    return 'h'+Math.abs(h).toString(36);
+  }
+  function escapeAttr(s){
+    return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function toastQP(msg, col){
+    if(typeof window.toast === 'function'){ try{ window.toast(msg, col); return; }catch(e){} }
+    console.log('[Image Insert]', msg);
+  }
+
+  function getActiveSchoolId(){
+    let sid = dbStorage.getItem(SCHOOL_KEY);
+    if(sid) return sid;
+    const inameEl = document.getElementById('iname');
+    return sanitizeId(inameEl ? inameEl.value : '');
+  }
+  function setActiveSchoolId(raw){
+    const sid = sanitizeId(raw);
+    dbStorage.setItem(SCHOOL_KEY, sid);
+    return sid;
+  }
+  function loadStore(schoolId){
+    try{
+      const raw = dbStorage.getItem(storeKey(schoolId));
+      const arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) ? arr : [];
+    }catch(e){ return []; }
+  }
+  function saveStore(schoolId, arr){
+    try{ dbStorage.setItem(storeKey(schoolId), JSON.stringify(arr)); }
+    catch(e){ alert('⚠️ Could not save image to Firebase. Check your internet connection and try again.'); }
+  }
+
+  let state = { schoolId: null, images: [] };
+  function refreshState(){
+    state.schoolId = getActiveSchoolId();
+    state.images = loadStore(state.schoolId);
+  }
+
+  // ---------- content block tagging (heading / paragraph / list / table / equation) ----------
+  function assignBlockKeys(){
+    const prev = document.getElementById('prev');
+    if(!prev) return [];
+    const kids = Array.from(prev.children).filter(c=>!c.classList.contains('qpimg-render'));
+    kids.forEach((el, idx)=>{
+      const txt = (el.textContent||'').trim().slice(0,60);
+      el.dataset.qpBlockIndex = idx;
+      el.dataset.qpBlockKey = hashStr(idx+'|'+txt);
+    });
+    return kids;
+  }
+  function blockLabel(el){
+    const tag = el.tagName.toLowerCase();
+    let kind = 'Block';
+    if(/^h[1-4]$/.test(tag)) kind='Heading';
+    else if(tag==='p') kind='Paragraph / Question';
+    else if(tag==='ul'||tag==='ol') kind='List / Options';
+    else if(tag==='table') kind='Table';
+    else if(el.classList.contains('math-block')) kind='Equation';
+    const txt = (el.textContent||'').trim().slice(0,45);
+    return `[${parseInt(el.dataset.qpBlockIndex,10)+1}] ${kind} — "${txt}${txt.length===45?'…':''}"`;
+  }
+  function findAnchorEl(kids, rec){
+    if(rec.anchorKey==='__start__' || rec.anchorKey==='__end__') return null;
+    let el = kids.find(k=>k.dataset.qpBlockKey===rec.anchorKey);
+    if(el) return el;
+    if(rec.anchorIndex!=null && kids[rec.anchorIndex]) return kids[rec.anchorIndex];
+    return null;
+  }
+
+  // ---------- image compression (keeps Firebase payload size reasonable) ----------
+  function fileToCompressedDataUrl(file, maxDim){
+    return new Promise((resolve,reject)=>{
+      const reader = new FileReader();
+      reader.onerror = ()=>reject(new Error('could not read file'));
+      reader.onload = ()=>{
+        const img = new Image();
+        img.onerror = ()=>reject(new Error('could not decode image'));
+        img.onload = ()=>{
+          let {width,height} = img;
+          if(width>maxDim || height>maxDim){
+            const scale = Math.min(maxDim/width, maxDim/height);
+            width = Math.round(width*scale); height = Math.round(height*scale);
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width; canvas.height = height;
+          canvas.getContext('2d').drawImage(img,0,0,width,height);
+          resolve(canvas.toDataURL('image/jpeg', 0.85));
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // ---------- render clean <img> nodes directly into #prev, at the exact anchor ----------
+  function buildWrapper(rec){
+    const div = document.createElement('div');
+    div.className = 'qpimg-render';
+    div.dataset.imgId = rec.id;
+    div.style.textAlign = rec.align || 'center';
+    div.style.margin = '8pt 0';
+    const img = document.createElement('img');
+    img.src = rec.src;
+    img.style.width = (rec.width||50)+'%';
+    img.style.maxWidth = '100%';
+    img.style.height = 'auto';
+    img.style.borderRadius = '4px';
+    img.alt = 'Inserted image';
+    div.appendChild(img);
+    return div;
+  }
+  function prependGroup(container, imgs){
+    imgs.slice().reverse().forEach(rec=>container.insertBefore(buildWrapper(rec), container.firstChild));
+  }
+  function appendGroup(container, imgs){
+    imgs.forEach(rec=>container.appendChild(buildWrapper(rec)));
+  }
+  function insertGroupRelative(targetEl, position, imgs){
+    if(position==='before'){
+      imgs.forEach(rec=>targetEl.parentNode.insertBefore(buildWrapper(rec), targetEl));
+    } else {
+      let cursor = targetEl;
+      imgs.forEach(rec=>{ const w=buildWrapper(rec); cursor.parentNode.insertBefore(w, cursor.nextSibling); cursor = w; });
+    }
+  }
+
+  let lastOrphans = [];
+  function renderImages(){
+    const prev = document.getElementById('prev');
+    if(!prev) return;
+    prev.querySelectorAll(':scope > .qpimg-render').forEach(n=>n.remove());
+    const kids = assignBlockKeys();
+    refreshState();
+    lastOrphans = [];
+
+    const startImgs = state.images.filter(r=>r.anchorKey==='__start__').sort((a,b)=>a.order-b.order);
+    const endImgs   = state.images.filter(r=>r.anchorKey==='__end__').sort((a,b)=>a.order-b.order);
+    const others    = state.images.filter(r=>r.anchorKey!=='__start__' && r.anchorKey!=='__end__');
+
+    if(endImgs.length) appendGroup(prev, endImgs);
+
+    const byAnchor = {};
+    others.forEach(rec=>{
+      const key = rec.anchorKey+'||'+rec.position;
+      (byAnchor[key] = byAnchor[key]||[]).push(rec);
+    });
+    Object.keys(byAnchor).forEach(key=>{
+      const [anchorKey, position] = key.split('||');
+      const group = byAnchor[key].sort((a,b)=>a.order-b.order);
+      const el = findAnchorEl(kids, group[0]);
+      if(!el){ lastOrphans.push(...group); return; }
+      insertGroupRelative(el, position, group);
+    });
+
+    if(startImgs.length) prependGroup(prev, startImgs);
+
+    renderManagerList();
+  }
+
+  // ---------- manager panel ----------
+  function buildAnchorOptionsHtml(selectedKey, searchTerm){
+    const kids = assignBlockKeys();
+    const term = (searchTerm||'').trim().toLowerCase();
+    let matched = kids;
+    if(term){
+      matched = kids.filter(el => (el.textContent||'').toLowerCase().includes(term));
+    }
+    let html = '';
+    if(!term || 'start of content'.includes(term)){
+      html += `<option value="__start__" ${selectedKey==='__start__'?'selected':''}>⭐ Start of content</option>`;
+    }
+    matched.forEach((el)=>{
+      const key = el.dataset.qpBlockKey;
+      const idx = el.dataset.qpBlockIndex;
+      html += `<option value="${key}" data-idx="${idx}" ${key===selectedKey?'selected':''}>${escapeAttr(blockLabel(el))}</option>`;
+    });
+    if(!term || 'end of content'.includes(term)){
+      html += `<option value="__end__" ${selectedKey==='__end__'?'selected':''}>⭐ End of content</option>`;
+    }
+    if(term && !matched.length){
+      html += `<option value="" disabled selected>😕 No block matches "${escapeAttr(searchTerm)}"</option>`;
+    }
+    return html;
+  }
+  function refreshAnchorSelect(){
+    const sel = document.getElementById('qpimgAnchorSelect');
+    const searchEl = document.getElementById('qpimgAnchorSearch');
+    if(sel) sel.innerHTML = buildAnchorOptionsHtml(null, searchEl ? searchEl.value : '');
+  }
+  function filterAnchorSelect(term){
+    const sel = document.getElementById('qpimgAnchorSelect');
+    const status = document.getElementById('qpimgAnchorSearchStatus');
+    if(!sel) return;
+    sel.innerHTML = buildAnchorOptionsHtml(null, term);
+    const count = sel.querySelectorAll('option[data-idx]').length;
+    if(status) status.textContent = term.trim()
+      ? `${count} block(s) match "${term.trim()}"`
+      : 'Type a word or a short line from the question to jump straight to that block.';
+  }
+
+  function insertNewImage(){
+    const fileInput = document.getElementById('qpimgFileInput');
+    const anchorSel = document.getElementById('qpimgAnchorSelect');
+    const posSel = document.getElementById('qpimgPosition');
+    const file = fileInput.files && fileInput.files[0];
+    if(!file){ toastQP('Choose an image file first', 'red'); return; }
+    if(!anchorSel.value){ toastQP('No matching block selected — adjust your search first', 'red'); return; }
+    fileToCompressedDataUrl(file, 1400).then(dataUrl=>{
+      refreshState();
+      const anchorKey = anchorSel.value;
+      const opt = anchorSel.selectedOptions[0];
+      const anchorIndex = opt && opt.dataset.idx!==undefined ? parseInt(opt.dataset.idx,10) : null;
+      const position = (anchorKey==='__start__'||anchorKey==='__end__') ? 'after' : posSel.value;
+      const siblingOrders = state.images.filter(r=>r.anchorKey===anchorKey && r.position===position).map(r=>r.order);
+      const order = siblingOrders.length ? Math.max(...siblingOrders)+1 : 0;
+      const rec = {
+        id: 'img_'+Date.now()+'_'+Math.random().toString(36).slice(2,8),
+        anchorKey, anchorIndex: (anchorIndex===null||isNaN(anchorIndex))?null:anchorIndex,
+        position, order, src: dataUrl, width: 50, align: 'center', createdAt: Date.now()
+      };
+      state.images.push(rec);
+      saveStore(state.schoolId, state.images);
+      fileInput.value = '';
+      renderImages();
+      toastQP('🖼️ Image inserted');
+    }).catch(err=>toastQP('Could not read image: '+err.message, 'red'));
+  }
+
+  function updateImage(id, patch){
+    refreshState();
+    const idx = state.images.findIndex(r=>r.id===id);
+    if(idx===-1) return;
+    state.images[idx] = Object.assign({}, state.images[idx], patch);
+    saveStore(state.schoolId, state.images);
+    renderImages();
+  }
+  function deleteImage(id){
+    refreshState();
+    state.images = state.images.filter(r=>r.id!==id);
+    saveStore(state.schoolId, state.images);
+    renderImages();
+  }
+  function moveImage(id, dir){
+    const kids = assignBlockKeys();
+    refreshState();
+    const rec = state.images.find(r=>r.id===id);
+    if(!rec) return;
+    if(rec.anchorKey==='__start__'){
+      if(dir>0 && kids[0]) updateImage(id,{anchorKey:kids[0].dataset.qpBlockKey, anchorIndex:0, position:'before'});
+      return;
+    }
+    if(rec.anchorKey==='__end__'){
+      if(dir<0 && kids.length) updateImage(id,{anchorKey:kids[kids.length-1].dataset.qpBlockKey, anchorIndex:kids.length-1, position:'after'});
+      return;
+    }
+    let curIdx = kids.findIndex(k=>k.dataset.qpBlockKey===rec.anchorKey);
+    if(curIdx===-1) curIdx = rec.anchorIndex!=null ? rec.anchorIndex : 0;
+    const newIdx = curIdx + dir;
+    if(newIdx<0){ updateImage(id,{anchorKey:'__start__', position:'after'}); return; }
+    if(newIdx>=kids.length){ updateImage(id,{anchorKey:'__end__', position:'after'}); return; }
+    updateImage(id, {anchorKey: kids[newIdx].dataset.qpBlockKey, anchorIndex: newIdx, position: rec.position});
+  }
+
+  function renderManagerList(){
+    const list = document.getElementById('qpimgList');
+    const status = document.getElementById('qpimgStatus');
+    if(!list || !status) return;
+    refreshState();
+    if(!state.images.length){
+      list.innerHTML = '';
+      status.textContent = `No images stored for "${state.schoolId}" yet.`;
+      return;
+    }
+    status.textContent = `${state.images.length} image(s) stored for "${state.schoolId}".` +
+      (lastOrphans.length ? ` ⚠️ ${lastOrphans.length} unattached — reattach below.` : '');
+
+    list.innerHTML = state.images.map(rec=>{
+      const orphan = lastOrphans.some(o=>o.id===rec.id);
+      return `
+      <div class="qpimg-item" data-id="${rec.id}" style="display:flex; gap:10px; align-items:flex-start; border:1px solid var(--border); border-radius:14px; padding:8px; ${orphan?'background:#fff7ed;border-color:#fdba74;':''}">
+        <img src="${rec.src}" style="width:64px;height:64px;object-fit:cover;border-radius:8px;flex-shrink:0;">
+        <div style="flex:1; display:flex; flex-direction:column; gap:6px; min-width:0;">
+          ${orphan ? `<div style="font-size:.68rem;color:#c2410c;">⚠️ Original position not found — pick a new one:</div>` : ''}
+          <select class="qpimg-anchor-edit" style="font-size:.72rem; padding:4px; border-radius:8px; border:1px solid var(--border);">
+            ${buildAnchorOptionsHtml(rec.anchorKey)}
+          </select>
+          <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+            <select class="qpimg-pos-edit" style="font-size:.7rem; padding:3px; border-radius:8px; border:1px solid var(--border);">
+              <option value="before" ${rec.position==='before'?'selected':''}>Before</option>
+              <option value="after" ${rec.position==='after'?'selected':''}>After</option>
+            </select>
+            <label style="font-size:.65rem; color:#64748b;">Width</label>
+            <input type="range" class="qpimg-width" min="15" max="100" value="${rec.width||50}" style="width:70px;">
+            <span class="qpimg-width-val" style="font-size:.65rem;color:#64748b;">${rec.width||50}%</span>
+            <select class="qpimg-align-edit" style="font-size:.7rem; padding:3px; border-radius:8px; border:1px solid var(--border);">
+              <option value="left" ${rec.align==='left'?'selected':''}>⬅ Left</option>
+              <option value="center" ${(rec.align||'center')==='center'?'selected':''}>↔ Center</option>
+              <option value="right" ${rec.align==='right'?'selected':''}>➡ Right</option>
+            </select>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button type="button" class="btn bo qpimg-up" style="padding:4px 10px; font-size:.68rem;">↑ Move</button>
+            <button type="button" class="btn bo qpimg-down" style="padding:4px 10px; font-size:.68rem;">↓ Move</button>
+            <button type="button" class="btn bo qpimg-del" style="padding:4px 10px; font-size:.68rem; color:#b91c1c;">🗑 Delete</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+
+    list.querySelectorAll('.qpimg-item').forEach(item=>{
+      const id = item.dataset.id;
+      item.querySelector('.qpimg-anchor-edit').addEventListener('change', e=>{
+        const opt = e.target.selectedOptions[0];
+        const newKey = e.target.value;
+        const posEl = item.querySelector('.qpimg-pos-edit');
+        updateImage(id, {
+          anchorKey: newKey,
+          anchorIndex: opt && opt.dataset.idx!==undefined ? parseInt(opt.dataset.idx,10) : null,
+          position: (newKey==='__start__'||newKey==='__end__') ? 'after' : posEl.value
+        });
+      });
+      item.querySelector('.qpimg-pos-edit').addEventListener('change', e=>updateImage(id, {position: e.target.value}));
+      const widthInp = item.querySelector('.qpimg-width');
+      widthInp.addEventListener('input', e=>{ item.querySelector('.qpimg-width-val').textContent = e.target.value+'%'; });
+      widthInp.addEventListener('change', e=>updateImage(id, {width: parseInt(e.target.value,10)}));
+      item.querySelector('.qpimg-align-edit').addEventListener('change', e=>updateImage(id, {align: e.target.value}));
+      item.querySelector('.qpimg-up').addEventListener('click', ()=>moveImage(id, -1));
+      item.querySelector('.qpimg-down').addEventListener('click', ()=>moveImage(id, 1));
+      item.querySelector('.qpimg-del').addEventListener('click', ()=>{ if(confirm('Delete this image?')) deleteImage(id); });
+    });
+  }
+
+  // ---------- export / import (separate JSON, scoped to image data only) ----------
+  function exportImages(){
+    refreshState();
+    const payload = { schoolId: state.schoolId, exportedAt: new Date().toISOString(), images: state.images };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `qp_images_${state.schoolId}_${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toastQP('Images exported');
+  }
+  function importImages(file){
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      try{
+        const data = JSON.parse(reader.result);
+        const arr = Array.isArray(data) ? data : (Array.isArray(data.images) ? data.images : null);
+        if(!arr) throw new Error('invalid file format');
+        refreshState();
+        const merge = confirm(`Import ${arr.length} image(s) into "${state.schoolId}"?\nOK = merge with existing images, Cancel = replace existing images for this school.`);
+        state.images = merge ? state.images.concat(arr) : arr;
+        saveStore(state.schoolId, state.images);
+        renderImages();
+        toastQP('Images imported');
+      }catch(e){ toastQP('Import failed: '+e.message, 'red'); }
+    };
+    reader.readAsText(file);
+  }
+
+  // ---------- inject panel (pure DOM injection — no edits to existing markup) ----------
+  function injectPanel(){
+    if(document.getElementById('qpimgCard')) return;
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.id = 'qpimgCard';
+    card.innerHTML = `
+      <div class="card-head"><span>🖼️ IMAGE INSERT</span><em>Firebase · per-school · real-time</em></div>
+      <div class="card-body">
+        <div class="row r2">
+          <div class="fg">
+            <label>School / Branch ID (image storage namespace)</label>
+            <input id="qpimgSchoolId" placeholder="e.g. sunrise-main">
+          </div>
+          <div class="fg">
+            <label>🔎 Search question / line to find its block</label>
+            <input id="qpimgAnchorSearch" placeholder="e.g. type Q12 or a few words from that line...">
+          </div>
+        </div>
+        <div class="row r2">
+          <div class="fg">
+            <label>Attach new image to</label>
+            <select id="qpimgAnchorSelect"></select>
+          </div>
+          <div class="fg">
+            <label>&nbsp;</label>
+            <div class="sbar" id="qpimgAnchorSearchStatus" style="border:1px solid var(--border); border-radius:14px; padding:8px 12px;">Type a word or a short line from the question to jump straight to that block.</div>
+          </div>
+        </div>
+        <div class="row r2">
+          <div class="fg">
+            <label>Position</label>
+            <select id="qpimgPosition">
+              <option value="before">Before selected block</option>
+              <option value="after" selected>After selected block</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Choose image file</label>
+            <input type="file" id="qpimgFileInput" accept="image/*">
+          </div>
+        </div>
+        <div style="display:flex; gap:9px; flex-wrap:wrap; margin-top:4px;">
+          <button type="button" class="btn bp" id="qpimgInsertBtn">➕ Insert Image</button>
+        </div>
+        <div id="qpimgList" style="margin-top:12px; display:flex; flex-direction:column; gap:10px;"></div>
+        <div class="sbar" id="qpimgStatus">No images inserted yet.</div>
+      </div>`;
+    const panels = document.querySelector('.panels');
+    if(panels && panels.parentNode) panels.parentNode.insertBefore(card, panels.nextSibling);
+    else { const wrap = document.querySelector('.wrap'); if(wrap) wrap.appendChild(card); }
+
+    document.getElementById('qpimgSchoolId').addEventListener('change', e=>{
+      const sid = setActiveSchoolId(e.target.value);
+      e.target.value = sid;
+      renderImages();
+    });
+    document.getElementById('qpimgAnchorSearch').addEventListener('input', e=>{
+      filterAnchorSelect(e.target.value);
+    });
+    document.getElementById('qpimgInsertBtn').addEventListener('click', insertNewImage);
+  }
+
+  function init(){
+    injectPanel();
+    refreshState();
+    const sidInput = document.getElementById('qpimgSchoolId');
+    if(sidInput) sidInput.value = state.schoolId;
+    refreshAnchorSelect();
+    renderImages();
+  }
+
+  // Wrap (not modify) doFormat so images always re-attach after (re)formatting
+  const _origDoFormat = window.doFormat;
+  if(typeof _origDoFormat === 'function'){
+    window.doFormat = function(){
+      const r = _origDoFormat.apply(this, arguments);
+      try{ refreshAnchorSelect(); renderImages(); }catch(e){ console.error('[Image Insert]', e); }
+      return r;
+    };
+  }
+
+  window.addEventListener('load', () => { window.dbStorageReady.then(init); });
+})();
+</script>
+<!-- ================================================================
+     BULLET STYLE MODULE (additive) — LEVEL-WISE bullets.
+     Separate bullet for: Heading, Sub-heading, Sub-sub, Mini heading and
+     for list Point / Sub-point / Level 3 / Level 4 (nested by indentation).
+     Saved in Firebase (qp_bulletLevels). Uses ::before so it renders in PDF.
+     ================================================================ -->
+<script>
+(function(){
+  'use strict';
+  const GLYPHS = ['●','◉','■','◆','▲','►','➤','➜','➔','❯','»','✓','★','✦','❖','✿','❀','✚','✱','◈','☞','✎','❂','⬥','▪','◇','○','□'];
+  const FONTS = "'Segoe UI Symbol','Noto Sans Symbols2','Noto Sans Symbols','DejaVu Sans','Arial Unicode MS',Arial,sans-serif";
+  const LEVELS = [
+    { k:'h1', label:'Heading',         hint:'#'    },
+    { k:'h2', label:'Sub-heading',     hint:'##'   },
+    { k:'h3', label:'Sub-sub-heading', hint:'###'  },
+    { k:'h4', label:'Mini heading',    hint:'####' },
+    { k:'l1', label:'Point',           hint:'* '   },
+    { k:'l2', label:'Sub-point',       hint:'  * ' },
+    { k:'l3', label:'Level 3 point',   hint:'    * ' },
+    { k:'l4', label:'Level 4 point',   hint:'      * ' }
+  ];
+  const DEFAULTS = { h1:'', h2:'', h3:'', h4:'', l1:'➤', l2:'◆', l3:'✦', l4:'❖' };
+  const K = { lv:'qp_bulletLevels', c:'qp_bulletColor' };
+  let active = 'h1';
+
+  function readLevels(){
+    let o = {};
+    try{ const raw = dbStorage.getItem(K.lv); if(raw) o = JSON.parse(raw) || {}; }catch(e){}
+    const out = {};
+    LEVELS.forEach(l=>{
+      const v = o[l.k];
+      out[l.k] = (v === '' || GLYPHS.indexOf(v) !== -1) ? v : DEFAULTS[l.k];
+    });
+    return out;
+  }
+  function state(){
+    let c = (window.dbStorage && dbStorage.getItem(K.c)) || '#1e293b';
+    if(!/^#[0-9a-fA-F]{6}$/.test(c)) c = '#1e293b';
+    return { lv: window.dbStorage ? readLevels() : Object.assign({}, DEFAULTS), c };
+  }
+  function q(s){ return '"' + String(s).replace(/\\/g,'\\\\').replace(/"/g,'\\"') + '"'; }
+
+  // "* item" / "- item" lines  ->  <li data-l="N"> (N from indentation: nested points)
+  window.qpListLevels = function(txt){
+    let stack = [];
+    return txt.split('\n').map(line=>{
+      if(!line.trim()) return line;
+      const m = line.match(/^([ \t]*)([-•*])[ \t]+(\S.*)$/);
+      if(!m){ stack = []; return line; }
+      const w = m[1].replace(/\t/g,'    ').length;
+      while(stack.length && w < stack[stack.length-1]) stack.pop();
+      if(!stack.length || w > stack[stack.length-1]) stack.push(w);
+      return '<li data-l="' + Math.min(stack.length, 5) + '">' + m[3] + '</li>';
+    }).join('\n');
+  };
+
+  // CSS used by BOTH the live preview and the PDF/HTML page builder
+  window.bulletCss = function(scope){
+    const st = state(), lv = st.lv;
+    let css =
+      `${scope} ul{ list-style:none; margin-left:.3em; padding-left:0; }\n` +
+      `${scope} ul > li{ list-style:none; position:relative; padding-left:1.4em; margin-bottom:2pt; }\n` +
+      `${scope} ul > li::before{ position:absolute; left:0; top:0; color:${st.c}; font-weight:700; font-family:${FONTS}; }\n`;
+    const lis = [['','l1'],['[data-l="2"]','l2'],['[data-l="3"]','l3'],['[data-l="4"]','l4'],['[data-l="5"]','l4']];
+    const idt = ['0','1.4em','2.8em','4.2em','4.2em'];
+    lis.forEach((p, i)=>{
+      const sel = p[0] ? `${scope} ul > li${p[0]}` : `${scope} ul > li`;
+      css += `${sel}::before{ content:${lv[p[1]] ? q(lv[p[1]]) : '""'}; }\n`;
+      if(i > 0) css += `${sel}{ margin-left:${idt[i]}; }\n`;
+    });
+    ['h1','h2','h3','h4'].forEach(h=>{
+      if(lv[h]) css += `${scope} ${h}::before{ content:${q(lv[h])}; margin-right:.45em; color:${st.c}; font-size:.75em; vertical-align:middle; font-family:${FONTS}; }\n`;
+    });
+    return css;
+  };
+
+  function applyPreviewStyle(){
+    let el = document.getElementById('qpBulletStyle');
+    if(!el){ el = document.createElement('style'); el.id = 'qpBulletStyle'; document.head.appendChild(el); }
+    el.textContent = window.bulletCss('#prev') + window.bulletCss('#qpBulletSample') +
+      '#qpBulletSample h1,#qpBulletSample h2,#qpBulletSample h3,#qpBulletSample h4{ margin:3px 0 1px; }' +
+      '#qpBulletSample h1{font-size:1.15rem;} #qpBulletSample h2{font-size:1.05rem;} #qpBulletSample h3{font-size:.98rem;} #qpBulletSample h4{font-size:.92rem;}' +
+      '#qpBulletSample ul{ margin:2px 0; }';
+  }
+
+  function chipStyle(on){
+    return 'font-size:1.05rem; min-width:46px; padding:5px 12px; font-family:' + FONTS + ';' +
+      (on ? 'border-color:#2563eb; background:#eef2ff; color:#1e40af;' : '');
+  }
+
+  function renderPicker(){
+    const st = state();
+    const rows = document.getElementById('qpLevelRows');
+    const grid = document.getElementById('qpBulletGrid');
+    if(!rows || !grid) return;
+
+    rows.innerHTML = '';
+    LEVELS.forEach(l=>{
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'chip';
+      const g = st.lv[l.k];
+      b.innerHTML = '<span style="opacity:.6;">' + l.label + '</span> &nbsp;<b style="font-family:' + FONTS + ';font-size:1rem;">' + (g || '∅') + '</b>';
+      const on = l.k === active;
+      b.style.cssText = 'padding:6px 14px;' + (on ? 'border-color:#2563eb; background:#2563eb; color:#fff;' : '');
+      if(on) b.querySelector('span').style.opacity = '.85';
+      b.addEventListener('click', ()=>{ active = l.k; renderPicker(); });
+      rows.appendChild(b);
+    });
+
+    const cur = st.lv[active];
+    const info = LEVELS.find(l=>l.k === active);
+    const lab = document.getElementById('qpActiveLabel');
+    if(lab) lab.innerHTML = '👉 अभी चुन रहे हैं: <b>' + info.label + '</b> <code style="background:#f1f5f9;padding:1px 6px;border-radius:6px;">' + info.hint.replace(/ /g,'&nbsp;') + '</code>';
+
+    grid.innerHTML = '';
+    const none = document.createElement('button');
+    none.type = 'button'; none.className = 'chip'; none.textContent = '∅ None';
+    none.style.cssText = chipStyle(cur === '');
+    none.addEventListener('click', ()=>assign(''));
+    grid.appendChild(none);
+    GLYPHS.forEach(g=>{
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'chip'; b.textContent = g;
+      b.style.cssText = chipStyle(cur === g);
+      b.addEventListener('click', ()=>assign(g));
+      grid.appendChild(b);
+    });
+
+    const col = document.getElementById('qpBulletColor');
+    if(col) col.value = st.c;
+
+    const sample = document.getElementById('qpBulletSample');
+    if(sample){
+      sample.innerHTML =
+        '<h1>Heading</h1><h2>Sub-heading</h2><h3>Sub-sub-heading</h3><h4>Mini heading</h4>' +
+        '<ul><li data-l="1">Point (पहला बिंदु)</li><li data-l="2">Sub-point (उप-बिंदु)</li>' +
+        '<li data-l="3">Level 3 point</li><li data-l="4">Level 4 point</li>' +
+        '<li data-l="3">Level 3 point</li><li data-l="2">Sub-point (उप-बिंदु)</li><li data-l="1">Point (दूसरा बिंदु)</li></ul>';
+    }
+  }
+  function assign(g){
+    const lv = readLevels();
+    lv[active] = g;
+    dbStorage.setItem(K.lv, JSON.stringify(lv));
+    // move on to the next level so bullets can be picked 1st, 2nd, 3rd ... in order
+    const i = LEVELS.findIndex(l=>l.k === active);
+    if(i < LEVELS.length - 1) active = LEVELS[i+1].k;
+    refresh();
+  }
+  function refresh(){ applyPreviewStyle(); renderPicker(); }
+
+  function injectCard(){
+    if(document.getElementById('qpBulletCard')) return;
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.id = 'qpBulletCard';
+    card.innerHTML = `
+      <div class="card-head"><span>🔘 BULLET STYLE — LEVEL WISE</span><em>Heading · Sub-heading · Point · Sub-point</em></div>
+      <div class="card-body">
+        <div style="font-size:.74rem; color:#64748b; font-family:monospace; margin-bottom:8px; line-height:1.5;">
+          ↳ Pehle upar se level chuno, phir neeche se bullet. Bullet chunte hi agla level apne aap select ho jata hai (1st, 2nd, 3rd...).<br>
+          ↳ Sub-point ke liye line ke aage 2 space chhodo: <code>  * sub point</code> &nbsp;(aur andar ke liye 4, 6 space)
+        </div>
+        <div id="qpLevelRows" style="display:flex; gap:7px; flex-wrap:wrap; margin-bottom:10px;"></div>
+        <div id="qpActiveLabel" style="font-size:.82rem; margin-bottom:8px;"></div>
+        <div id="qpBulletGrid" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;"></div>
+        <div style="display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin-bottom:8px;">
+          <label style="font-size:.8rem; display:flex; gap:6px; align-items:center;">
+            Color <input type="color" id="qpBulletColor" value="#1e293b" style="width:38px; height:26px; border:1px solid var(--border); border-radius:6px; padding:0;">
+          </label>
+          <button type="button" class="btn bo" id="qpBulletReset" style="padding:5px 14px; font-size:.72rem;">↺ Reset (default)</button>
+        </div>
+        <div id="qpBulletSample" style="border:1px dashed var(--border); border-radius:12px; padding:8px 12px; font-family:'Times New Roman',serif;"></div>
+      </div>`;
+    const panels = document.querySelector('.panels');
+    if(panels && panels.parentNode) panels.parentNode.insertBefore(card, panels);
+    else { const w = document.querySelector('.wrap'); if(w) w.appendChild(card); }
+    document.getElementById('qpBulletColor').addEventListener('input', e=>{
+      dbStorage.setItem(K.c, e.target.value); refresh();
+    });
+    document.getElementById('qpBulletReset').addEventListener('click', ()=>{
+      dbStorage.setItem(K.lv, JSON.stringify(DEFAULTS)); active = 'h1'; refresh();
+    });
+  }
+
+  window.addEventListener('load', ()=>{
+    window.dbStorageReady.then(()=>{ injectCard(); refresh(); if(typeof doFormat === 'function') doFormat(); });
+  });
+})();
+</script>
+
+</body>
+</html>
